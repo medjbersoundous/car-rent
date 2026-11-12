@@ -6,10 +6,10 @@ import {
   cancelRental,
 } from "../controllers/adminController.js";
 
-import { verifyToken, verifyRole } from "../middlewares/verifyToken.js";
+import { verifyToken, verifyAdmin } from "../middlewares/verifyToken.js";
 
 const router = express.Router();
-router.use(verifyToken, verifyRole("admin"));
+router.use(verifyToken, verifyAdmin);
 
 router.get("/customers", getCustomers);
 router.get("/rentals", getAllRentals);

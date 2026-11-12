@@ -1,18 +1,14 @@
 import jwt from "jsonwebtoken";
-
 function verifyToken(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
-
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
-        message: "Access denied. Token required.",
+        message: "Token required",
       });
     }
     const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-
+    jwt.verify(token, process.env.JWT_SECRET);
     next();
   } catch (error) {
     return res.status(401).json({
@@ -20,17 +16,36 @@ function verifyToken(req, res, next) {
     });
   }
 }
-
-function verifyRole(role) {
-  return (req, res, next) => {
-    if (req.user.role !== role) {
+function verifyAdmin(req, res, next) {
+  try {
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.role !== "admin") {
       return res.status(403).json({
-        message: "Access forbidden. Unauthorized role.",
+        message: "Access forbidden",
       });
     }
-
     next();
-  };
+  } catch (error) {
+    return res.status(401).json({
+      message: "Invalid or expired token",
+    });
+  }
 }
-
-export { verifyToken, verifyRole };
+function verifyCustomer(req, res, next) {
+  try {
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.role !== "customer") {
+      return res.status(403).json({
+        message: "Access forbidden",
+      });
+    }
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      message: "Invalid or expired token",
+    });
+  }
+}
+export { verifyToken, verifyAdmin, verifyCustomer };

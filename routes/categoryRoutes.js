@@ -7,14 +7,14 @@ import {
   deleteCategory,
 } from "../controllers/categoryController.js";
 
-import { verifyToken, verifyRole } from "../middlewares/verifyToken.js";
+import { verifyToken, verifyAdmin } from "../middlewares/verifyToken.js";
 
 const router = express.Router();
 router.get("/", getCategories);
-router.post("/", verifyToken, verifyRole("admin"), addCategory);
+router.post("/", verifyToken, verifyAdmin, addCategory);
 
-router.put("/:id", verifyToken, verifyRole("admin"), updateCategory);
+router.put("/:id", verifyToken, verifyAdmin, updateCategory);
 
-router.delete("/:id", verifyToken, verifyRole("admin"), deleteCategory);
+router.delete("/:id", verifyToken, verifyAdmin, deleteCategory);
 
 export default router;

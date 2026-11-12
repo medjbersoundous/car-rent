@@ -9,14 +9,14 @@ import {
   deleteCar,
 } from "../controllers/carController.js";
 
-import { verifyToken, verifyRole } from "../middlewares/verifyToken.js";
+import { verifyToken, verifyAdmin } from "../middlewares/verifyToken.js";
 
 const router = express.Router();
 router.get("/available", getAvailableCars);
-router.get("/", verifyToken, verifyRole("admin"), getCars);
+router.get("/", verifyToken, verifyAdmin, getCars);
 router.get("/:id", getCarById);
-router.post("/", verifyToken, verifyRole("admin"), addCar);
-router.put("/:id", verifyToken, verifyRole("admin"), updateCar);
-router.delete("/:id", verifyToken, verifyRole("admin"), deleteCar);
+router.post("/", verifyToken, verifyAdmin, addCar);
+router.put("/:id", verifyToken, verifyAdmin, updateCar);
+router.delete("/:id", verifyToken, verifyAdmin, deleteCar);
 
 export default router;

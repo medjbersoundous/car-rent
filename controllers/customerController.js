@@ -1,7 +1,7 @@
 import Customer from "../models/Customer.js";
 async function getMyProfile(req, res) {
   try {
-    const customer = await Customer.findById(req.user.id).select("-password");
+    const customer = await Customer.findById(req.user.id);
 
     if (!customer) {
       return res.status(404).json({
@@ -21,8 +21,8 @@ async function updateMyProfile(req, res) {
     const customer = await Customer.findByIdAndUpdate(
       req.user.id,
       { name, email, phone },
-      { new: true, runValidators: true },
-    ).select("-password");
+      { new: true },
+    );
 
     if (!customer) {
       return res.status(404).json({

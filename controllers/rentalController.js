@@ -2,51 +2,41 @@ import Rental from "../models/Rental.js";
 import Car from "../models/Car.js";
 async function createRental(req, res) {
   try {
-    const { car_id, startDate, endDate } = req.body;
-    const car = await Car.findById(car_id);
-
+    const car = await Car.findById(req.body.car_id);
     if (!car) {
-      return res.status(404).json({
-        message: "Car not found",
-      });
+      return res.status(404).json({ message: "Car not found" });
     }
     if (car.status !== "available") {
-      return res.status(400).json({
-        message: "This car is unavailable",
-      });
+      return res.status(400).json({ message: "Car is unavailable" });
     }
-
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    if (isNaN(start.getTime()) || isNaN(end.getTime()) || end <= start) {
+    const start = new Date(req.body.startDate);
+    const end = new Date(req.body.endDate);
+    if (end <= start) {
       return res.status(400).json({
         message: "End date must be after start date",
       });
     }
     const existingRental = await Rental.findOne({
-      car_id,
+      car_id: req.body.car_id,
       status: "confirmed",
       startDate: { $lt: end },
       endDate: { $gt: start },
     });
-
     if (existingRental) {
       return res.status(400).json({
         message: "Car is already reserved for these dates",
       });
     }
-    const numberOfDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-    const totalPrice = numberOfDays * car.pricePerDay;
-
+    const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+    const totalPrice = days * car.pricePerDay;
     const rental = await Rental.create({
       customer_id: req.user.id,
-      car_id,
+      car_id: req.body.car_id,
       startDate: start,
       endDate: end,
-      totalPrice,
+      totalPrice: totalPrice,
       status: "pending",
     });
-
     res.status(201).json({
       message: "Rental request created successfully",
       rental,
@@ -59,9 +49,7 @@ async function getMyRentals(req, res) {
   try {
     const rentals = await Rental.find({
       customer_id: req.user.id,
-    })
-      .populate("car_id")
-      .sort({ createdAt: -1 });
+    }).populate("car_id");
 
     res.status(200).json(rentals);
   } catch (error) {
@@ -76,9 +64,7 @@ async function cancelMyRental(req, res) {
     });
 
     if (!rental) {
-      return res.status(404).json({
-        message: "Rental not found",
-      });
+      return res.status(404).json({ message: "Rental not found" });
     }
 
     if (rental.status !== "pending") {
@@ -87,8 +73,9 @@ async function cancelMyRental(req, res) {
       });
     }
 
-    rental.status = "cancelled";
-    await rental.save();
+    await Rental.findByIdAndUpdate(req.params.id, {
+      status: "cancelled",
+    });
 
     res.status(200).json({
       message: "Rental cancelled successfully",
@@ -97,14 +84,13 @@ async function cancelMyRental(req, res) {
     res.status(500).json({ message: error.message });
   }
 }
+
 async function confirmRental(req, res) {
   try {
     const rental = await Rental.findById(req.params.id);
 
     if (!rental) {
-      return res.status(404).json({
-        message: "Rental not found",
-      });
+      return res.status(404).json({ message: "Rental not found" });
     }
 
     if (rental.status !== "pending") {
@@ -120,8 +106,8 @@ async function confirmRental(req, res) {
         message: "Car is unavailable",
       });
     }
+
     const conflict = await Rental.findOne({
-      _id: { $ne: rental._id },
       car_id: rental.car_id,
       status: "confirmed",
       startDate: { $lt: rental.endDate },
@@ -134,27 +120,28 @@ async function confirmRental(req, res) {
       });
     }
 
-    rental.status = "confirmed";
-    await rental.save();
-    car.status = "unavailable";
-    await car.save();
+    await Rental.findByIdAndUpdate(req.params.id, {
+      status: "confirmed",
+    });
+
+    await Car.findByIdAndUpdate(rental.car_id, {
+      status: "unavailable",
+    });
 
     res.status(200).json({
       message: "Rental confirmed successfully",
-      rental,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 }
+
 async function rejectRental(req, res) {
   try {
     const rental = await Rental.findById(req.params.id);
 
     if (!rental) {
-      return res.status(404).json({
-        message: "Rental not found",
-      });
+      return res.status(404).json({ message: "Rental not found" });
     }
 
     if (rental.status !== "pending") {
@@ -163,8 +150,9 @@ async function rejectRental(req, res) {
       });
     }
 
-    rental.status = "rejected";
-    await rental.save();
+    await Rental.findByIdAndUpdate(req.params.id, {
+      status: "rejected",
+    });
 
     res.status(200).json({
       message: "Rental rejected successfully",

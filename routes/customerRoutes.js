@@ -5,10 +5,10 @@ import {
   updateMyProfile,
 } from "../controllers/customerController.js";
 
-import { verifyToken, verifyRole } from "../middlewares/verifyToken.js";
+import { verifyToken, verifyCustomer } from "../middlewares/verifyToken.js";
 
 const router = express.Router();
-router.use(verifyToken, verifyRole("customer"));
+router.use(verifyToken, verifyCustomer);
 
 router.get("/profile", getMyProfile);
 

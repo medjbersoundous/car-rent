@@ -6,12 +6,12 @@ import {
   confirmRental,
   rejectRental,
 } from "../controllers/rentalController.js";
-import { verifyToken, verifyRole } from "../middlewares/verifyToken.js";
+import { verifyToken, verifyAdmin, verifyCustomer } from "../middlewares/verifyToken.js";
 const router = express.Router();
-router.post("/", verifyToken, verifyRole("customer"), createRental);
-router.get("/my-rentals", verifyToken, verifyRole("customer"), getMyRentals);
-router.patch("/my-rentals/:id/cancel",verifyToken,verifyRole("customer"),cancelMyRental);
-router.patch("/:id/confirm", verifyToken, verifyRole("admin"), confirmRental);
-router.patch("/:id/reject", verifyToken, verifyRole("admin"), rejectRental);
+router.post("/", verifyToken, verifyCustomer, createRental);
+router.get("/my-rentals", verifyToken, verifyCustomer, getMyRentals);
+router.patch("/my-rentals/:id/cancel",verifyToken,verifyCustomer,cancelMyRental);
+router.patch("/:id/confirm", verifyToken, verifyAdmin, confirmRental);
+router.patch("/:id/reject", verifyToken, verifyAdmin, rejectRental);
 
 export default router;

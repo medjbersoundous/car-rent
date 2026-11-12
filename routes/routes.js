@@ -1,6 +1,3 @@
-// STEP 0 - BACKEND PREPARATION (2/3)
-// Path: backend/routes/routes.js
-
 import express from "express";
 
 import authRoutes from "./authRoutes.js";

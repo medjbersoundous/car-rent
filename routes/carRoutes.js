@@ -12,7 +12,7 @@ import {
 import { verifyToken, verifyRole } from "../middlewares/verifyToken.js";
 
 const router = express.Router();
-router.get("/available", verifyToken, verifyRole("customer"), getAvailableCars);
+router.get("/available", getAvailableCars);
 router.get("/", verifyToken, verifyRole("admin"), getCars);
 router.get("/:id", getCarById);
 router.post("/", verifyToken, verifyRole("admin"), addCar);
